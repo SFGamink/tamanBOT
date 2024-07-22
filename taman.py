@@ -103,7 +103,7 @@ def print_welcome_message():
     print(Fore.RED + Style.BRIGHT + "Jangan di edit la bang :)\n\n")
 
 def main():
-    wallet_file = 'wallets.txt'
+    wallet_file = 'wallet.txt'
     wallet_addresses = read_wallet_addresses(wallet_file)
 
     if wallet_addresses:
@@ -117,10 +117,10 @@ def main():
                 point = data['point']
                 last_mining = data['lastMining']
 
-                print(Fore.CYAN + f"\n================ Detail Mining ({wallet_address}) ================\n")
+                print(Fore.CYAN + f"\n================ ({wallet_address}) ================\n")
                 print(Fore.LIGHTYELLOW_EX + f"Point        : {point}")
                 print(Fore.LIGHTYELLOW_EX + f"Last Mining  : {last_mining}")
-                print(Fore.CYAN + f"\n=============== Auto Claim Mining ({wallet_address}) ===============\n")
+                print(Fore.CYAN + f"\n=============== ({wallet_address}) ===============\n")
 
                 auto_claim_result = auto_claim(wallet_address)
 
