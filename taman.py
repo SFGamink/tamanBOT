@@ -1,7 +1,7 @@
 import requests
 import time
 import sys
-from colorama import Fore, Style  # Menambahkan colorama untuk warna teks
+from colorama import Fore, Style
 
 # Definisi headers yang digunakan
 headers = {
@@ -22,15 +22,14 @@ headers = {
 
 def user_info(wallet_address):
     url = "https://api.taman.fun/mining"
-    headers['wallet'] = wallet_address  # Mengatur wallet_address dalam headers
+    headers['wallet'] = wallet_address
 
     try:
         response = requests.get(url, headers=headers)
 
-        # Check if the request was successful
         if response.status_code == 200:
             data = response.json()
-            return data  # Returning the entire response JSON for potential future use
+            return data
         else:
             return None
 
@@ -40,27 +39,22 @@ def user_info(wallet_address):
 
 def auto_claim(wallet_address):
     url = "https://api.taman.fun/mining"
-    headers['wallet'] = wallet_address  # Mengatur wallet_address dalam headers
+    headers['wallet'] = wallet_address
 
     try:
         while True:
-            # Perform GET request to fetch mining info
             response = requests.get(url, headers=headers)
 
-            # Check if the request was successful
             if response.status_code == 200:
                 data = response.json()
 
-                # Check if there are points that can be claimed
                 if 'pointCanClaimed' in data and data['pointCanClaimed'] >= 2.5:
                     points_claimed = data['pointCanClaimed']
 
-                    # Check if secondsToFill is provided in the response
                     if 'secondsToFill' in data:
                         seconds_to_fill = data['secondsToFill']
                         print(f"Waiting for {seconds_to_fill} seconds before claiming...")
 
-                        # Animate loading until secondsToFill reaches 0
                         while seconds_to_fill > 0:
                             sys.stdout.write('\r')
                             sys.stdout.write(f"Waiting: [{'=' * (seconds_to_fill - 1)}] {seconds_to_fill}")
@@ -71,7 +65,6 @@ def auto_claim(wallet_address):
                         sys.stdout.write(" " * 50)
                         sys.stdout.write('\r')
 
-                    # Perform claim operation here (if there's an API endpoint for claiming)
                     claim_response = requests.post("https://api.taman.fun/claim", headers=headers)
 
                     if claim_response.status_code == 200:
@@ -85,24 +78,23 @@ def auto_claim(wallet_address):
             else:
                 print(f"Failed to fetch mining information. Status code: {response.status_code}")
 
-            time.sleep(10)  # Tunggu 10 detik sebelum memeriksa lagi
+            time.sleep(10)
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         return None
 
-def read_wallet_address(file_path):
+def read_wallet_addresses(file_path):
     try:
         with open(file_path, 'r') as file:
-            wallet_address = file.read().strip()
-        return wallet_address
+            wallet_addresses = [line.strip() for line in file.readlines()]
+        return wallet_addresses
     except FileNotFoundError:
         print(f"File {file_path} not found.")
-        return None
+        return []
 
 def print_welcome_message():
     print(r"""      
-
 ▒█▀▀▀█ █▀▀█ ░█▀█░ ▒█▄░▒█ 
 ░▀▀▀▄▄ ░░▀▄ █▄▄█▄ ▒█▒█▒█ 
 ▒█▄▄▄█ █▄▄█ ░░░█░ ▒█░░▀█
@@ -111,34 +103,32 @@ def print_welcome_message():
     print(Fore.RED + Style.BRIGHT + "Jangan di edit la bang :)\n\n")
 
 def main():
-    wallet_file = 'wallet.txt'
-    wallet_address = read_wallet_address(wallet_file)
+    wallet_file = 'wallets.txt'
+    wallet_addresses = read_wallet_addresses(wallet_file)
 
-    if wallet_address:
-        # Menampilkan pesan selamat datang
+    if wallet_addresses:
         print_welcome_message()
 
-        # Lakukan pengambilan info mining terlebih dahulu
-        user_info_result = user_info(wallet_address)
+        for wallet_address in wallet_addresses:
+            user_info_result = user_info(wallet_address)
 
-        if user_info_result:
-            data = user_info_result['data']
-            point = data['point']
-            last_mining = data['lastMining']
+            if user_info_result:
+                data = user_info_result['data']
+                point = data['point']
+                last_mining = data['lastMining']
 
-            print(Fore.CYAN + f"\n================ Detail Mining ================\n")
-            print(Fore.LIGHTYELLOW_EX + f"Point        : {point}")
-            print(Fore.LIGHTYELLOW_EX + f"Last Mining  : {last_mining}")
-            print(Fore.CYAN + f"\n=============== Auto Claim Mining ===============\n")
+                print(Fore.CYAN + f"\n================ Detail Mining ({wallet_address}) ================\n")
+                print(Fore.LIGHTYELLOW_EX + f"Point        : {point}")
+                print(Fore.LIGHTYELLOW_EX + f"Last Mining  : {last_mining}")
+                print(Fore.CYAN + f"\n=============== Auto Claim Mining ({wallet_address}) ===============\n")
 
-        else:
-            print("Failed to fetch mining information.")
+                auto_claim_result = auto_claim(wallet_address)
 
-        # Mulai auto_claim di background setelah menampilkan info mining
-        auto_claim_result = auto_claim(wallet_address)
+                if auto_claim_result:
+                    print(auto_claim_result)
 
-        if auto_claim_result:
-            print(auto_claim_result)
+            else:
+                print(f"Failed to fetch mining information for wallet: {wallet_address}")
 
         print("\nProgram selesai.")
 
