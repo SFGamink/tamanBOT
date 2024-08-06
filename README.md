@@ -5,6 +5,7 @@ Link Bot : [Taman - Heroes Kombat](t.me/tamanfun_bot/app?startapp=4uvLFCIcW1n5)
 # Fitur BOT :
 
 - Auto Claim Mining
+- Auto Clear Task ( Update )
 - Multiakun ( insyaallah )
 
 # Cara Penggunaan :
